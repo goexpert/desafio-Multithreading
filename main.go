@@ -4,12 +4,23 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/goexpert/desafio-Multithreading/adapter"
 )
 
 var cep = "02206000"
+
+func getCep(client *adapter.ClientHttp, url string, wg *sync.WaitGroup) ([]byte, error) {
+	body, err := client.GetRequest(url)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	println(body)
+	wg.Done()
+	return body, nil
+}
 
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -18,16 +29,12 @@ func main() {
 	urlBrasilApi := fmt.Sprintf("https://brasilapi.com.br/api/cep/v1/%s", cep)
 	urlViaCep := fmt.Sprintf("http://viacep.com.br/ws/%s/json/", cep)
 
-	body, err := client.GetRequest(urlBrasilApi)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	println(string(body))
+	waitGroup := sync.WaitGroup{}
+	waitGroup.Add(2)
 
-	body, err = client.GetRequest(urlViaCep)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	println(string(body))
+	go getCep(client, urlBrasilApi, &waitGroup)
+	go getCep(client, urlViaCep, &waitGroup)
+
+	waitGroup.Wait()
 
 }
