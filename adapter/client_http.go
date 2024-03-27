@@ -5,11 +5,13 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"time"
 )
 
 var (
 	errTimeout = errors.New("timeout")
 	errGeneral = errors.New("general")
+	errNot200  = errors.New("not200")
 )
 
 type ClientHttp struct {
@@ -38,6 +40,12 @@ func (c *ClientHttp) GetRequest(url string) ([]byte, error) {
 			return nil, errGeneral
 		}
 	}
+
+	if resp.StatusCode != 200 {
+		time.Sleep(time.Second * 5)
+		return nil, errNot200
+	}
+
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
