@@ -18,9 +18,9 @@ type ClientHttp struct {
 	Ctx context.Context
 }
 
-func NewClientHttp(ctx context.Context) *ClientHttp {
+func NewClientHttp() *ClientHttp {
 	return &ClientHttp{
-		Ctx: ctx,
+		Ctx: context.Background(),
 	}
 }
 
